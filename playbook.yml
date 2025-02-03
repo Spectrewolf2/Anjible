@@ -1,0 +1,38 @@
+---
+- name: Configure Ubuntu Docker Container via SSH
+  hosts: ubuntu_docker
+  become: yes  # use sudo
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install apt-utils (to avoid debconf warnings)
+      apt:
+        name: apt-utils
+        state: present
+        update_cache: yes
+
+    - name: Upgrade packages
+      apt:
+        upgrade: dist
+        # DO NOT include the leading dashes here. Ansible will add them for you.
+        dpkg_options: "force-confdef,force-confold"
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+
+
+
+
+#What this does:
+#
+#    Update apt cache: Equivalent to running sudo apt-get update.
+#    Upgrade packages: Equivalent to running sudo apt-get dist-upgrade (the dpkg_options helps skip any interactive prompts).
+#    Install Git: Ensures Git is installed.
