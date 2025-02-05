@@ -20,6 +20,8 @@ ansible-playbook -i inventory.ini playbook.yml
 ```If all tasks complete successfully, you can SSH back into the container to verify:
 ssh ubuntu@localhost -p 2222
 
+Password=ubuntu
+
 Check Git:
 
 git --version
