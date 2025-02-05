@@ -1,4 +1,6 @@
-On Ansible Control node [Your host machine]
+This demo/lab assumes you are running on ubuntu 22.04.
+For this demo/lab to work you will need to install the following [git,ansible,sshpass]. git to clone the repository and its contents, ansible to preform automation and configuration management, sshpass to allow you to ssh with a password instead of a key.
+sudo apt install git
 sudo apt update
 sudo apt install ansible
 sudo apt update
