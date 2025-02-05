@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+import paramiko
+import time
+
+HOST = "your_ubuntu_docker_host_or_ip"
+USERNAME = "your_username"
+PASSWORD = "your_password"
+
+def run_command(ssh_client, command, get_pty=False):
+    """
+    Helper function to execute a command on the remote host.
+    Returns the combined stdout and stderr.
+    """
+    stdin, stdout, stderr = ssh_client.exec_command(command, get_pty=get_pty)
+    # If the command requires interactive input (like a sudo password), you can handle it here:
+    # e.g., for a sudo password prompt:
+    # if get_pty:
+    #     time.sleep(0.5)
+    #     stdin.write(PASSWORD + '\n')
+    #     stdin.flush()
+
+    output = stdout.read().decode('utf-8')
+    error = stderr.read().decode('utf-8')
+
+    if error.strip():
+        print(f"[ERROR] Command: {command}\n{error}")
+    else:
+        print(f"[OK] Command: {command}")
+    return output, error
+
+def main():
+    # Create an SSH client
+    ssh_client = paramiko.SSHClient()
+    # Load host keys and automatically add new host keys if needed
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    try:
+        # Connect to the remote host
+        print(f"Connecting to {HOST}...")
+        ssh_client.connect(
+            hostname=HOST,
+            username=USERNAME,
+            password=PASSWORD,
+            look_for_keys=False,
+            allow_agent=False
+        )
+        print("Connected.")
+
+        # Since we need sudo, either pass '-S' to read from stdin or 
+        # use get_pty=True to allow paramiko to respond to sudo prompts.
+        # Update apt cache
+        run_command(ssh_client, "sudo apt-get update -y", get_pty=True)
+
+        # Install apt-utils
+        run_command(ssh_client, "sudo apt-get install -y apt-utils", get_pty=True)
+
+        # Upgrade packages (dist-upgrade)
+        # environment variable DEBIAN_FRONTEND=noninteractive can be prepended directly
+        run_command(
+            ssh_client,
+            "sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y "
+            "-o Dpkg::Options::='--force-confdef' "
+            "-o Dpkg::Options::='--force-confold'",
+            get_pty=True
+        )
+
+        # Install Git
+        run_command(ssh_client, "sudo apt-get install -y git", get_pty=True)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        ssh_client.close()
+        print("Connection closed.")
+
+if __name__ == "__main__":
+    main()
