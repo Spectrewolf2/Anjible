@@ -1,10 +1,9 @@
-```
-mkdir ssh_ubuntu_docker
-```
+# Ensure sshpass is installed
 
 ```
-cd ssh_ubuntu_docker
+sudo apt install sshpass
 ```
+
 ```
 docker build -t my_ssh_ubuntu:latest .
 ```
